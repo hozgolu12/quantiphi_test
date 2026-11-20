@@ -1,20 +1,24 @@
+import mongoose from 'mongoose';
 import { Conversation } from '../models/Conversation.js';
-import { v4 as uuidv4 } from 'uuid';
+
+const ALLOWED_TONES = ['Professional', 'Casual', 'Concise'];
 
 /**
  * GET /api/conversations
- * Retrieve all past conversations for the History Sidebar
+ * Retrieve all past conversations for the History Sidebar (supports search query)
  */
 export const getAllConversations = async (req, res) => {
   try {
     const { search } = req.query;
     let query = {};
 
-    if (search && search.trim()) {
+    if (search && typeof search === 'string' && search.trim()) {
+      // Escape special regex characters to prevent regex injection
+      const sanitized = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query = {
         $or: [
-          { title: { $regex: search.trim(), $options: 'i' } },
-          { 'messages.content': { $regex: search.trim(), $options: 'i' } },
+          { title: { $regex: sanitized, $options: 'i' } },
+          { 'messages.content': { $regex: sanitized, $options: 'i' } },
         ],
       };
     }
@@ -24,12 +28,13 @@ export const getAllConversations = async (req, res) => {
       .sort({ updatedAt: -1 });
 
     const formatted = conversations.map((conv) => {
-      const lastMessage = conv.messages[conv.messages.length - 1];
+      const messages = conv.messages || [];
+      const lastMessage = messages[messages.length - 1];
       return {
         id: conv._id.toString(),
         title: conv.title,
         tone: conv.tone,
-        messageCount: conv.messages.length,
+        messageCount: messages.length,
         lastMessageSnippet: lastMessage ? lastMessage.content.slice(0, 75) : '',
         updatedAt: conv.updatedAt,
         createdAt: conv.createdAt,
@@ -38,7 +43,7 @@ export const getAllConversations = async (req, res) => {
 
     res.status(200).json({ success: true, data: formatted });
   } catch (error) {
-    console.error('[ConversationController] Error getting conversations:', error);
+    console.error('[ConversationController] Error getting conversations:', error.message);
     res.status(500).json({ success: false, error: 'Failed to retrieve conversations' });
   }
 };
@@ -50,6 +55,11 @@ export const getAllConversations = async (req, res) => {
 export const getConversationById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid conversation ID format' });
+    }
+
     const conversation = await Conversation.findById(id);
 
     if (!conversation) {
@@ -68,7 +78,7 @@ export const getConversationById = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(`[ConversationController] Error retrieving conversation ${req.params.id}:`, error);
+    console.error(`[ConversationController] Error retrieving conversation ${req.params.id}:`, error.message);
     res.status(500).json({ success: false, error: 'Failed to retrieve conversation' });
   }
 };
@@ -80,9 +90,17 @@ export const getConversationById = async (req, res) => {
 export const createConversation = async (req, res) => {
   try {
     const { title, tone = 'Professional' } = req.body;
+
+    if (tone && !ALLOWED_TONES.includes(tone)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid tone. Allowed options: ${ALLOWED_TONES.join(', ')}`,
+      });
+    }
+
     const conversation = new Conversation({
-      title: title || 'New Conversation',
-      tone: ['Professional', 'Casual', 'Concise'].includes(tone) ? tone : 'Professional',
+      title: title && typeof title === 'string' && title.trim() ? title.trim() : 'New Conversation',
+      tone: tone || 'Professional',
       messages: [],
     });
 
@@ -100,18 +118,23 @@ export const createConversation = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('[ConversationController] Error creating conversation:', error);
+    console.error('[ConversationController] Error creating conversation:', error.message);
     res.status(500).json({ success: false, error: 'Failed to create conversation' });
   }
 };
 
 /**
  * DELETE /api/conversations/:id
- * Delete a conversation thread
+ * Delete a conversation thread (Extra Feature 2)
  */
 export const deleteConversation = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid conversation ID format' });
+    }
+
     const deleted = await Conversation.findByIdAndDelete(id);
 
     if (!deleted) {
@@ -120,7 +143,7 @@ export const deleteConversation = async (req, res) => {
 
     res.status(200).json({ success: true, message: 'Conversation deleted successfully' });
   } catch (error) {
-    console.error(`[ConversationController] Error deleting conversation ${req.params.id}:`, error);
+    console.error(`[ConversationController] Error deleting conversation ${req.params.id}:`, error.message);
     res.status(500).json({ success: false, error: 'Failed to delete conversation' });
   }
 };
@@ -134,8 +157,15 @@ export const updateConversationTone = async (req, res) => {
     const { id } = req.params;
     const { tone } = req.body;
 
-    if (!['Professional', 'Casual', 'Concise'].includes(tone)) {
-      return res.status(400).json({ success: false, error: 'Invalid tone specified' });
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, error: 'Invalid conversation ID format' });
+    }
+
+    if (!ALLOWED_TONES.includes(tone)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid tone specified. Allowed options: ${ALLOWED_TONES.join(', ')}`,
+      });
     }
 
     const conversation = await Conversation.findByIdAndUpdate(
@@ -156,7 +186,7 @@ export const updateConversationTone = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(`[ConversationController] Error updating tone:`, error);
+    console.error(`[ConversationController] Error updating tone:`, error.message);
     res.status(500).json({ success: false, error: 'Failed to update conversation tone' });
   }
 };

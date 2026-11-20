@@ -1,27 +1,26 @@
 import mongoose from 'mongoose';
 
-export let isConnectedToMongo = false;
+export const isConnectedToMongo = () => mongoose.connection.readyState === 1;
 
 export const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/ai_chat_assistant';
+  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ai_chat_assistant';
 
   try {
     mongoose.set('strictQuery', false);
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 3000,
     });
-    isConnectedToMongo = true;
-    console.log(`[Database] Connected successfully to MongoDB: ${uri}`);
+    console.log(`[Database] MongoDB connected successfully to: ${uri}`);
   } catch (error) {
-    isConnectedToMongo = false;
-    console.warn(`[Database] MongoDB daemon not reachable at ${uri} (${error.message}).`);
-    console.log('[Database] Seamlessly activated persistent JSON file store (backend/data/conversations.json) with Mongoose-compatible schema.');
+    console.error(`[Database] MongoDB connection failed for ${uri}: ${error.message}`);
+    console.error('[Database] Please verify that your local MongoDB daemon is running (e.g. mongod or MongoDB service).');
+    throw error;
   }
 };
 
 export const closeDB = async () => {
-  if (isConnectedToMongo) {
+  if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
-    isConnectedToMongo = false;
+    console.log('[Database] MongoDB connection closed.');
   }
 };

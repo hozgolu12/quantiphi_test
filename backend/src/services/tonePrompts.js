@@ -1,34 +1,36 @@
 /**
  * Tone modifier definitions for the AI Assistant ("The Vibe Check")
- * Passed as system instructions to modify the AI model's style and temperament.
+ * Formulated on the backend and passed as authoritative system instructions to OpenAI.
  */
 
 export const TONE_MODIFIERS = {
   Professional: {
     name: 'Professional',
-    description: 'Polished, structured, authoritative, and corporate-ready',
+    description: 'Clear, formal, respectful language',
     instruction:
-      'You are an executive-level AI assistant. Maintain a formal, courteous, structured, and polished professional tone. Use clear headings, articulate paragraphs, and industry-standard terminology. Avoid colloquial slang, informal abbreviations, or overly casual humor.',
+      'You are a professional AI assistant. Communicate with clear, formal, respectful language. Provide articulate, well-structured explanations and polite phrasing, avoiding casual colloquialisms.',
   },
   Casual: {
     name: 'Casual',
-    description: 'Friendly, warm, conversational, and approachable',
+    description: 'Friendly, relaxed, simple language',
     instruction:
-      'You are a friendly, upbeat, and conversational AI companion. Communicate with a warm, relaxed, approachable vibe. Feel free to use natural conversational phrasing, friendly humor, and emojis where appropriate, while remaining genuinely helpful and insightful.',
+      'You are a friendly, approachable AI companion. Communicate with friendly, relaxed, simple language. Use natural conversational phrasing, warmth, and an upbeat tone.',
   },
   Concise: {
     name: 'Concise',
-    description: 'Ultra-direct, brief, bulleted, and zero fluff',
+    description: 'Brief and direct, without unnecessary explanation',
     instruction:
-      'You are an ultra-concise, precision-focused AI assistant. Deliver answers with extreme brevity, directness, and efficiency. Eliminate all conversational filler, introductory pleasantries, long apologies, or preambles. Use short sentences and compact bullet points. Maximum signal, zero noise.',
+      'You are a precision-focused AI assistant. Deliver answers that are brief and direct, without unnecessary explanation, pleasantries, or preamble. Maximum signal, minimum noise.',
   },
 };
 
 /**
- * Returns the system instruction modifier string for the selected tone.
- * Defaults to Professional if an invalid tone is provided.
+ * Validates and returns the system instruction modifier string for the selected tone.
+ * Validates against allowed tones on the server.
  */
 export const getToneSystemInstruction = (tone) => {
-  const selected = TONE_MODIFIERS[tone] || TONE_MODIFIERS.Professional;
-  return selected.instruction;
+  if (tone && TONE_MODIFIERS[tone]) {
+    return TONE_MODIFIERS[tone].instruction;
+  }
+  return TONE_MODIFIERS.Professional.instruction;
 };

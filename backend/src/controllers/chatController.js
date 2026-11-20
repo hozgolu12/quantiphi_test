@@ -1,6 +1,10 @@
+import mongoose from 'mongoose';
 import { Conversation } from '../models/Conversation.js';
-import { generateStreamingResponse } from '../services/aiService.js';
+import { streamOpenAIResponse } from '../services/aiService.js';
 import { v4 as uuidv4 } from 'uuid';
+
+const MAX_MESSAGE_LENGTH = 4000;
+const ALLOWED_TONES = ['Professional', 'Casual', 'Concise'];
 
 /**
  * POST /api/chat
@@ -26,41 +30,65 @@ export const streamChat = async (req, res) => {
   try {
     const { conversationId, message, tone = 'Professional' } = req.body;
 
-    // Server-side validation
+    // 1. Authoritative Server-side validation: Empty message
     if (!message || typeof message !== 'string' || !message.trim()) {
-      sendSSE({ type: 'error', error: 'User message is required and cannot be empty.' });
+      sendSSE({ type: 'error', error: 'Validation Error: User prompt cannot be empty.' });
       return res.end();
     }
 
-    const validatedTone = ['Professional', 'Casual', 'Concise'].includes(tone)
-      ? tone
-      : 'Professional';
+    // 2. Authoritative Server-side validation: Message size limit
+    if (message.trim().length > MAX_MESSAGE_LENGTH) {
+      sendSSE({
+        type: 'error',
+        error: `Validation Error: Message exceeds maximum length limit of ${MAX_MESSAGE_LENGTH} characters.`,
+      });
+      return res.end();
+    }
 
+    // 3. Authoritative Server-side validation: Tone option
+    if (tone && !ALLOWED_TONES.includes(tone)) {
+      sendSSE({
+        type: 'error',
+        error: `Validation Error: Invalid tone "${tone}". Allowed options are: ${ALLOWED_TONES.join(', ')}.`,
+      });
+      return res.end();
+    }
+
+    const validatedTone = tone || 'Professional';
     let conversation;
 
-    // Retrieve or initialize conversation in MongoDB
+    // 4. Authoritative Server-side validation: Conversation identifier
     if (conversationId) {
+      if (mongoose.isValidObjectId && !mongoose.isValidObjectId(conversationId)) {
+        sendSSE({
+          type: 'error',
+          error: `Validation Error: Invalid conversation identifier "${conversationId}".`,
+        });
+        return res.end();
+      }
+
       conversation = await Conversation.findById(conversationId);
       if (!conversation) {
-        // If an invalid ID was sent, create a new conversation
-        conversation = new Conversation({
-          title: message.trim().slice(0, 36) + (message.length > 36 ? '...' : ''),
-          tone: validatedTone,
-          messages: [],
+        sendSSE({
+          type: 'error',
+          error: `Not Found: Conversation with ID "${conversationId}" does not exist.`,
         });
-      } else {
-        // Update conversation tone to match the latest user selection
-        conversation.tone = validatedTone;
+        return res.end();
       }
+
+      // Update active tone for this thread
+      conversation.tone = validatedTone;
     } else {
+      // Create new conversation document in MongoDB
+      const titleSnippet = message.trim().slice(0, 38) + (message.trim().length > 38 ? '...' : '');
       conversation = new Conversation({
-        title: message.trim().slice(0, 36) + (message.length > 36 ? '...' : ''),
+        title: titleSnippet,
         tone: validatedTone,
         messages: [],
       });
     }
 
-    // Persist user message immediately to MongoDB
+    // Persist user prompt immediately to MongoDB with timestamp
     const userMessage = {
       id: uuidv4(),
       role: 'user',
@@ -79,16 +107,19 @@ export const streamChat = async (req, res) => {
       userMessage,
     });
 
-    // Prepare conversational history context for AI API
-    const history = conversation.messages.slice(-10).map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
+    // Prepare conversational history context for OpenAI
+    const history = (conversation.messages || [])
+      .slice(0, -1) // Exclude current prompt since it's passed as prompt
+      .slice(-10)
+      .map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
 
     let fullAiResponse = '';
 
-    // Invoke streaming AI generation
-    await generateStreamingResponse({
+    // Invoke genuine OpenAI streaming
+    await streamOpenAIResponse({
       prompt: message.trim(),
       tone: validatedTone,
       conversationHistory: history,
@@ -101,7 +132,11 @@ export const streamChat = async (req, res) => {
       },
     });
 
-    // Persist completed AI response to MongoDB
+    // CRITICAL: Only persist the assistant response if stream succeeded with content
+    if (!fullAiResponse || !fullAiResponse.trim()) {
+      throw new Error('Incomplete response received from AI provider.');
+    }
+
     const aiMessage = {
       id: uuidv4(),
       role: 'assistant',
@@ -113,7 +148,7 @@ export const streamChat = async (req, res) => {
     conversation.messages.push(aiMessage);
     await conversation.save();
 
-    // Signal completion with final saved message
+    // Signal stream completion with saved AI message
     sendSSE({
       type: 'done',
       conversationId: conversation._id.toString(),
@@ -122,10 +157,11 @@ export const streamChat = async (req, res) => {
 
     res.end();
   } catch (error) {
-    console.error('[ChatController] Stream error:', error);
+    console.error('[ChatController] Stream error:', error.message);
+    // Send clear error payload to UI without saving partial failed answer
     sendSSE({
       type: 'error',
-      error: error.message || 'Internal server error while streaming response.',
+      error: error.message || 'An error occurred while streaming response.',
     });
     res.end();
   }
