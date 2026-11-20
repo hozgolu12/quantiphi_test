@@ -15,6 +15,8 @@ export default function App() {
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [activeTone, setActiveTone] = useState('Professional');
+  const [selectedModelId, setSelectedModelId] = useState('gpt-4o-mini');
+  const [selectedProvider, setSelectedProvider] = useState('openai');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -115,6 +117,8 @@ export default function App() {
       conversationId: activeConversationId,
       message: prompt,
       tone: activeTone,
+      provider: selectedProvider,
+      model: selectedModelId,
       onStart: (data) => {
         if (data.conversationId && (!activeConversationId || activeConversationId !== data.conversationId)) {
           setActiveConversationId(data.conversationId);
@@ -149,6 +153,11 @@ export default function App() {
     });
   };
 
+  const handleSelectModel = (modelObj) => {
+    setSelectedModelId(modelObj.id);
+    setSelectedProvider(modelObj.provider);
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
       {/* History Sidebar */}
@@ -170,6 +179,8 @@ export default function App() {
         <Header
           activeTone={activeTone}
           onToneChange={handleToneChange}
+          selectedModelId={selectedModelId}
+          onSelectModel={handleSelectModel}
           isStreaming={isStreaming}
           onOpenSidebar={() => setIsSidebarOpen(true)}
           onOpenExport={() => setIsExportOpen(true)}

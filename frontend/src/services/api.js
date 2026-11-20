@@ -60,6 +60,8 @@ export async function streamChatResponse({
   conversationId,
   message,
   tone,
+  provider,
+  model,
   onStart,
   onChunk,
   onDone,
@@ -71,7 +73,7 @@ export async function streamChatResponse({
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ conversationId, message, tone }),
+      body: JSON.stringify({ conversationId, message, tone, provider, model }),
     });
 
     if (!response.ok) {

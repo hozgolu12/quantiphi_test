@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 import { Conversation } from '../models/Conversation.js';
-import { streamOpenAIResponse } from '../services/aiService.js';
+import { streamAIResponse } from '../services/aiService.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const MAX_MESSAGE_LENGTH = 4000;
 const ALLOWED_TONES = ['Professional', 'Casual', 'Concise'];
+const ALLOWED_PROVIDERS = ['openai', 'claude'];
 
 /**
  * POST /api/chat
@@ -28,7 +29,7 @@ export const streamChat = async (req, res) => {
   };
 
   try {
-    const { conversationId, message, tone = 'Professional' } = req.body;
+    const { conversationId, message, tone = 'Professional', provider = 'openai', model } = req.body;
 
     // 1. Authoritative Server-side validation: Empty message
     if (!message || typeof message !== 'string' || !message.trim()) {
@@ -55,6 +56,9 @@ export const streamChat = async (req, res) => {
     }
 
     const validatedTone = tone || 'Professional';
+    const validatedProvider = (provider && ALLOWED_PROVIDERS.includes(provider.toLowerCase()))
+      ? provider.toLowerCase()
+      : (process.env.AI_PROVIDER || 'openai').toLowerCase();
     let conversation;
 
     // 4. Authoritative Server-side validation: Conversation identifier
@@ -118,8 +122,10 @@ export const streamChat = async (req, res) => {
 
     let fullAiResponse = '';
 
-    // Invoke genuine OpenAI streaming
-    await streamOpenAIResponse({
+    // Invoke genuine streaming AI provider (OpenAI or Claude)
+    await streamAIResponse({
+      provider: validatedProvider,
+      model,
       prompt: message.trim(),
       tone: validatedTone,
       conversationHistory: history,

@@ -1,10 +1,13 @@
 import React from 'react';
 import { Menu, Download, Sparkles } from 'lucide-react';
 import ToneToggle from './ToneToggle.jsx';
+import ModelSelector from './ModelSelector.jsx';
 
 export default function Header({
   activeTone,
   onToneChange,
+  selectedModelId,
+  onSelectModel,
   isStreaming,
   onOpenSidebar,
   onOpenExport,
@@ -44,6 +47,13 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Model Selector (OpenAI / Claude) */}
+        <ModelSelector
+          selectedModelId={selectedModelId}
+          onSelectModel={onSelectModel}
+          disabled={isStreaming}
+        />
+
         {/* Tone Toggle (The Vibe Check) */}
         <ToneToggle
           activeTone={activeTone}
