@@ -249,5 +249,3 @@ Every incoming prompt is immediately appended to the conversation document with 
 
 ---
 
-## 📄 License
-MIT License. Built for the Quantiphi Vibe Coding Round.
