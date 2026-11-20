@@ -1,42 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Cpu, ChevronDown, Check, Sparkles } from 'lucide-react';
+import { ChevronDown, Check, Sparkles } from 'lucide-react';
 
-export const AVAILABLE_MODELS = [
+export const INTEGRATED_MODELS = [
   {
     id: 'gpt-4o-mini',
     name: 'GPT-4o Mini',
     provider: 'openai',
     providerName: 'OpenAI',
-    badge: 'Default • Fast',
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/10 border-emerald-500/20',
-  },
-  {
-    id: 'gpt-4o',
-    name: 'GPT-4o',
-    provider: 'openai',
-    providerName: 'OpenAI',
-    badge: 'High Reasoning',
-    color: 'text-blue-400',
-    bg: 'bg-blue-500/10 border-blue-500/20',
+    badge: 'Integrated',
+    accentColor: 'text-emerald-400',
+    dotColor: 'bg-emerald-400',
+    borderColor: 'border-emerald-500/20',
   },
   {
     id: 'claude-3-5-sonnet-20241022',
     name: 'Claude 3.5 Sonnet',
     provider: 'claude',
     providerName: 'Anthropic',
-    badge: 'Claude Flagship',
-    color: 'text-amber-400',
-    bg: 'bg-amber-500/10 border-amber-500/20',
-  },
-  {
-    id: 'claude-3-haiku-20240307',
-    name: 'Claude 3 Haiku',
-    provider: 'claude',
-    providerName: 'Anthropic',
-    badge: 'Ultra Lightweight',
-    color: 'text-orange-400',
-    bg: 'bg-orange-500/10 border-orange-500/20',
+    badge: 'Integrated',
+    accentColor: 'text-amber-400',
+    dotColor: 'bg-amber-400',
+    borderColor: 'border-amber-500/20',
   },
 ];
 
@@ -49,7 +33,7 @@ export default function ModelSelector({
   const dropdownRef = useRef(null);
 
   const activeModel =
-    AVAILABLE_MODELS.find((m) => m.id === selectedModelId) || AVAILABLE_MODELS[0];
+    INTEGRATED_MODELS.find((m) => m.id === selectedModelId) || INTEGRATED_MODELS[0];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -67,23 +51,25 @@ export default function ModelSelector({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-medium text-slate-200 transition-all ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-800/80'
-        }`}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+          isOpen
+            ? 'bg-slate-800 border-indigo-500/50 shadow-sm shadow-indigo-500/10'
+            : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
-        <Cpu className={`w-3.5 h-3.5 ${activeModel.color}`} />
-        <span className="hidden sm:inline text-slate-400">{activeModel.providerName}:</span>
-        <span className="font-semibold text-white">{activeModel.name}</span>
-        <ChevronDown className="w-3 h-3 text-slate-400" />
+        <span className={`w-2 h-2 rounded-full ${activeModel.dotColor}`} />
+        <span className="text-slate-400 font-normal">{activeModel.providerName}</span>
+        <span className="text-slate-200 font-semibold">{activeModel.name}</span>
+        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 animate-fade-in">
-          <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 mb-1">
-            Select Intelligence Model
+        <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-60 bg-slate-900/95 border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 backdrop-blur-xl animate-fade-in">
+          <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Connected AI Models
           </div>
-          <div className="space-y-1">
-            {AVAILABLE_MODELS.map((model) => {
+          <div className="space-y-1 mt-1">
+            {INTEGRATED_MODELS.map((model) => {
               const isSelected = model.id === activeModel.id;
               return (
                 <button
@@ -93,22 +79,20 @@ export default function ModelSelector({
                     onSelectModel(model);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between p-2 rounded-lg text-xs transition-colors text-left ${
+                  className={`w-full flex items-center justify-between p-2 rounded-lg text-xs transition-all text-left ${
                     isSelected
-                      ? 'bg-slate-800 text-white font-semibold'
-                      : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+                      ? 'bg-slate-800/90 text-white font-medium border border-slate-700/80 shadow-sm'
+                      : 'text-slate-300 hover:bg-slate-800/40 hover:text-white border border-transparent'
                   }`}
                 >
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-indigo-400' : 'bg-slate-500'}`} />
-                      <span>{model.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${model.dotColor}`} />
+                    <div className="flex flex-col">
+                      <span className="font-medium text-slate-100">{model.name}</span>
+                      <span className="text-[10px] text-slate-400">{model.providerName}</span>
                     </div>
-                    <span className="text-[10px] text-slate-400 ml-3">
-                      {model.providerName} • {model.badge}
-                    </span>
                   </div>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-indigo-400" />}
                 </button>
               );
             })}

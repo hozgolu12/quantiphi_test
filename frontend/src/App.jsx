@@ -190,6 +190,7 @@ export default function App() {
         <ChatInterface
           messages={currentConversation?.messages || []}
           activeTone={activeTone}
+          selectedModelId={selectedModelId}
           onSendMessage={handleSendMessage}
           isStreaming={isStreaming}
           streamText={streamText}

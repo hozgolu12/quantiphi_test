@@ -6,21 +6,21 @@ import { User, Bot, Copy, Check, Briefcase, Smile, Zap } from 'lucide-react';
 const ToneBadge = ({ tone }) => {
   if (!tone) return null;
   const config = {
-    Professional: { icon: Briefcase, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+    Professional: { icon: Briefcase, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
     Casual: { icon: Smile, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
     Concise: { icon: Zap, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
   }[tone] || { icon: Briefcase, color: 'text-slate-400 bg-slate-800' };
 
   const Icon = config.icon;
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${config.color}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${config.color}`}>
       <Icon className="w-2.5 h-2.5" />
       {tone}
     </span>
   );
 };
 
-// Code block renderer with syntax styling and 1-Click Copy
+// Clean Code Block Renderer with 1-Click Copy
 const CodeBlock = ({ node, inline, className, children, ...props }) => {
   const [copied, setCopied] = useState(false);
   const match = /language-(\w+)/.exec(className || '');
@@ -39,20 +39,20 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
 
   if (!inline && (match || codeString.includes('\n'))) {
     return (
-      <div className="relative my-3 rounded-lg overflow-hidden border border-slate-700/60 bg-slate-950 font-mono text-xs">
+      <div className="relative my-3 rounded-lg overflow-hidden border border-slate-800 bg-[#070A0F] font-mono text-xs">
         <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900 border-b border-slate-800 text-slate-400">
-          <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wide">
+          <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-wide">
             {language || 'code'}
           </span>
           <button
             onClick={handleCopy}
             type="button"
-            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors bg-slate-800/80 hover:bg-slate-800 px-2 py-0.5 rounded"
+            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded cursor-pointer"
           >
             {copied ? (
               <>
                 <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400">Copied!</span>
+                <span className="text-emerald-400">Copied</span>
               </>
             ) : (
               <>
@@ -62,7 +62,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
             )}
           </button>
         </div>
-        <div className="p-3 overflow-x-auto text-slate-200">
+        <div className="p-3 overflow-x-auto text-slate-200 leading-relaxed">
           <code className={className} {...props}>
             {children}
           </code>
@@ -104,18 +104,18 @@ export default function MessageBubble({ message }) {
     >
       {/* Avatar */}
       <div
-        className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center shadow-md ${
+        className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs ${
           isUser
-            ? 'bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-indigo-500/20'
-            : 'bg-gradient-to-tr from-slate-800 to-slate-700 text-indigo-400 border border-slate-700 shadow-black/40'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'bg-slate-900 text-indigo-400 border border-slate-800'
         }`}
       >
-        {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+        {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
       </div>
 
       {/* Bubble Content */}
       <div
-        className={`relative max-w-[85%] sm:max-w-[75%] rounded-2xl p-4 shadow-sm ${
+        className={`relative max-w-[85%] sm:max-w-[78%] rounded-2xl p-4 shadow-sm ${
           isUser
             ? 'bg-indigo-600 text-white rounded-tr-none'
             : 'bg-slate-900 border border-slate-800 text-slate-100 rounded-tl-none'
@@ -123,16 +123,16 @@ export default function MessageBubble({ message }) {
       >
         {/* Header line for AI: Tone badge & timestamp */}
         {!isUser && (
-          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800/80 text-xs">
+          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800 text-xs">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-indigo-400 text-xs">AI Assistant</span>
+              <span className="font-semibold text-slate-200 text-xs">AI Assistant</span>
               <ToneBadge tone={message.tone} />
             </div>
             <button
               onClick={handleCopyFullMessage}
               type="button"
               title="Copy message"
-              className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded hover:bg-slate-800"
+              className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded hover:bg-slate-800 cursor-pointer"
             >
               {copiedFull ? (
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -163,8 +163,8 @@ export default function MessageBubble({ message }) {
 
         {/* Footer timestamp */}
         <div
-          className={`flex items-center mt-1 text-[10px] ${
-            isUser ? 'justify-end text-indigo-200/80' : 'justify-end text-slate-500'
+          className={`flex items-center mt-1.5 text-[10px] ${
+            isUser ? 'justify-end text-indigo-200/70' : 'justify-end text-slate-500'
           }`}
         >
           {formattedTime}

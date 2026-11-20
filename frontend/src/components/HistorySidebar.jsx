@@ -3,14 +3,14 @@ import { Plus, Search, MessageSquare, Trash2, X, Briefcase, Smile, Zap, RotateCw
 
 const TonePill = ({ tone }) => {
   const config = {
-    Professional: { icon: Briefcase, color: 'text-blue-400 bg-blue-500/10' },
+    Professional: { icon: Briefcase, color: 'text-indigo-400 bg-indigo-500/10' },
     Casual: { icon: Smile, color: 'text-amber-400 bg-amber-500/10' },
     Concise: { icon: Zap, color: 'text-emerald-400 bg-emerald-500/10' },
   }[tone] || { icon: Briefcase, color: 'text-slate-400 bg-slate-800' };
 
   const Icon = config.icon;
   return (
-    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium ${config.color}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${config.color}`}>
       <Icon className="w-2.5 h-2.5" />
       {tone}
     </span>
@@ -58,7 +58,7 @@ export default function HistorySidebar({
 
   return (
     <>
-      {/* Backdrop for mobile */}
+      {/* Mobile backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
@@ -67,41 +67,39 @@ export default function HistorySidebar({
       )}
 
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-40 w-72 sm:w-80 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:static top-0 bottom-0 left-0 z-40 w-72 bg-slate-950 border-r border-slate-800/80 flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+        {/* Header */}
+        <div className="h-14 px-4 border-b border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-600/30">
+            <div className="w-6 h-6 rounded-md bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
               VC
             </div>
-            <div>
-              <h2 className="text-sm font-bold text-white tracking-tight">VibeChat</h2>
-              <p className="text-[10px] text-slate-400">Conversations History</p>
-            </div>
+            <span className="text-xs font-semibold text-slate-200">Conversation History</span>
           </div>
+
           <div className="flex items-center gap-1">
             {onRefresh && (
               <button
                 onClick={onRefresh}
                 title="Sync with MongoDB"
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition-colors"
               >
                 <RotateCw className="w-3.5 h-3.5" />
               </button>
             )}
             <button
               onClick={onClose}
-              className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+              className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* New Chat Button */}
+        {/* Action Button: New Conversation */}
         <div className="p-3">
           <button
             onClick={() => {
@@ -109,28 +107,28 @@ export default function HistorySidebar({
               if (window.innerWidth < 1024) onClose();
             }}
             type="button"
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all duration-150 cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium shadow-sm transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Conversation</span>
           </button>
         </div>
 
-        {/* Search Bar (Extra Feature 2) */}
+        {/* Search Bar (Extra Feature 1) */}
         <div className="px-3 pb-2">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" />
             <input
               type="text"
-              placeholder="Search past threads..."
+              placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-950/70 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-900/80 border border-slate-800/80 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
         </div>
 
-        {/* Thread List */}
+        {/* Conversation List */}
         <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
           {filtered.length === 0 ? (
             <div className="p-6 text-center text-xs text-slate-500">
@@ -148,34 +146,34 @@ export default function HistorySidebar({
                     onSelectConversation(conv.id);
                     if (window.innerWidth < 1024) onClose();
                   }}
-                  className={`group relative flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${
+                  className={`group relative flex items-start gap-2.5 p-2 rounded-lg cursor-pointer transition-all ${
                     isActive
-                      ? 'bg-slate-800/90 border border-slate-700 text-white shadow-sm'
-                      : 'hover:bg-slate-800/40 text-slate-300 border border-transparent'
+                      ? 'bg-slate-900 text-white border border-slate-800 shadow-sm'
+                      : 'hover:bg-slate-900/60 text-slate-300 border border-transparent'
                   }`}
                 >
                   <MessageSquare
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                    className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
                       isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-400'
                     }`}
                   />
 
                   <div className="flex-1 min-w-0 pr-6">
                     <p className="text-xs font-medium truncate">{conv.title}</p>
-                    <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-400">
+                    <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-500">
                       <span>{formatRelativeTime(conv.updatedAt)}</span>
                       <span>•</span>
                       <TonePill tone={conv.tone} />
                     </div>
                   </div>
 
-                  {/* Delete Button */}
+                  {/* Delete Button (Extra Feature 2) */}
                   <div
-                    className="absolute right-2 top-2.5 flex items-center"
+                    className="absolute right-2 top-2 flex items-center"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {isConfirming ? (
-                      <div className="flex items-center gap-1 bg-rose-950/90 border border-rose-800/80 px-1.5 py-0.5 rounded text-[10px] text-rose-300">
+                      <div className="flex items-center gap-1 bg-rose-950 border border-rose-800/80 px-1.5 py-0.5 rounded text-[10px] text-rose-300">
                         <button
                           onClick={() => {
                             onDeleteConversation(conv.id);
@@ -209,10 +207,13 @@ export default function HistorySidebar({
           )}
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-slate-800/80 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>MongoDB Persisted</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        {/* Footer */}
+        <div className="p-3 border-t border-slate-800/80 text-[10px] text-slate-500 flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            MongoDB Connected
+          </span>
+          <span className="font-mono">{filtered.length} threads</span>
         </div>
       </aside>
     </>

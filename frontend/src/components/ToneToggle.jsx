@@ -6,34 +6,25 @@ const TONES = [
     id: 'Professional',
     label: 'Professional',
     icon: Briefcase,
-    color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-    activeBg: 'bg-blue-600 text-white shadow-lg shadow-blue-500/25',
-    tag: 'Formal & Structured',
+    activeClass: 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30',
   },
   {
     id: 'Casual',
     label: 'Casual',
     icon: Smile,
-    color: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    activeBg: 'bg-amber-600 text-white shadow-lg shadow-amber-500/25',
-    tag: 'Friendly & Upbeat',
+    activeClass: 'bg-amber-600 text-white shadow-sm shadow-amber-600/30',
   },
   {
     id: 'Concise',
     label: 'Concise',
     icon: Zap,
-    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-    activeBg: 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25',
-    tag: 'Direct & Bulleted',
+    activeClass: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30',
   },
 ];
 
 export default function ToneToggle({ activeTone, onToneChange, disabled = false }) {
   return (
-    <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 border border-slate-800 rounded-xl backdrop-blur-md">
-      <span className="hidden sm:inline-block px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        Vibe:
-      </span>
+    <div className="flex items-center p-0.5 bg-slate-900 border border-slate-800 rounded-lg">
       {TONES.map((tone) => {
         const Icon = tone.icon;
         const isActive = activeTone === tone.id;
@@ -44,15 +35,14 @@ export default function ToneToggle({ activeTone, onToneChange, disabled = false 
             type="button"
             disabled={disabled}
             onClick={() => onToneChange(tone.id)}
-            title={`${tone.label} mode: ${tone.tag}`}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
               isActive
-                ? tone.activeBg
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? tone.activeClass
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : ''}`} />
-            <span>{tone.label}</span>
+            <Icon className="w-3 h-3" />
+            <span className="hidden sm:inline">{tone.label}</span>
           </button>
         );
       })}
