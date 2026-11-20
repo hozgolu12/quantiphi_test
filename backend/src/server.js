@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`===============================================`);
       console.log(` AI Chat Assistant Backend Running on port ${PORT}`);
       console.log(` Health Check: http://localhost:${PORT}/api/health`);

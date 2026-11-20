@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, MessageSquare, Trash2, X, Briefcase, Smile, Zap } from 'lucide-react';
+import { Plus, Search, MessageSquare, Trash2, X, Briefcase, Smile, Zap, RotateCw } from 'lucide-react';
 
 const TonePill = ({ tone }) => {
   const config = {
@@ -27,6 +27,7 @@ export default function HistorySidebar({
   onSearchChange,
   isOpen,
   onClose,
+  onRefresh,
 }) {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
@@ -81,12 +82,23 @@ export default function HistorySidebar({
               <p className="text-[10px] text-slate-400">Conversations History</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                title="Sync with MongoDB"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* New Chat Button */}

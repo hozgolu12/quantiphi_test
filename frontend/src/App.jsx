@@ -119,6 +119,7 @@ export default function App() {
         if (data.conversationId && (!activeConversationId || activeConversationId !== data.conversationId)) {
           setActiveConversationId(data.conversationId);
         }
+        refreshConversations(searchQuery);
       },
       onChunk: (chunk) => {
         setStreamText((prev) => prev + chunk);
@@ -142,6 +143,8 @@ export default function App() {
       onError: (err) => {
         setIsStreaming(false);
         setErrorMessage(err.message || 'Stream connection error');
+        // Refresh sidebar so newly created user prompt thread is visible immediately
+        refreshConversations(searchQuery);
       },
     });
   };
@@ -159,6 +162,7 @@ export default function App() {
         onSearchChange={setSearchQuery}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        onRefresh={() => refreshConversations(searchQuery)}
       />
 
       {/* Main Chat Area */}
